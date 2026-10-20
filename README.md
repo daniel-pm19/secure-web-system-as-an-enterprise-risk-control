@@ -1,94 +1,94 @@
 # Secure Web System as an Enterprise Risk Control
 
-Sistema web con frontend React, autenticación con Auth0, una API Spring Boot (Java 21) protegida como OAuth 2.0 Resource Server y publicación por HTTPS con Duck DNS, Apache HTTP Server y un certificado de Let's Encrypt.
+Web system with a React frontend, Auth0 authentication, a Spring Boot API (Java 21) protected as an OAuth 2.0 Resource Server, and public HTTPS access through Duck DNS, Apache HTTP Server, and a Let's Encrypt certificate.
 
-**URL desplegada:** <https://daniel-risk-lab.duckdns.org>
+**Deployed URL:** <https://daniel-risk-lab.duckdns.org>
 
-![Llamada autenticada a la API desde la URL HTTPS](docs/evidence/screenshots/17-https-api-200.png)
+![Authenticated API call from the HTTPS URL](docs/evidence/screenshots/17-https-api-200.png)
 
-## Arquitectura
+## Architecture
 
 ```
-Navegador
-  │ login y access token
+Browser
+  │ login and access token
   ▼
 Auth0 ───────────────► React (Vite) ── Authorization: Bearer <token> ──► Spring Boot API
                                                                          │ 127.0.0.1:8080
 Internet ── Duck DNS ── Apache + TLS (80 → 443) ── ProxyPass /api/ ──────┘
 ```
 
-| Componente | Implementación |
+| Component | Implementation |
 | --- | --- |
-| Servidor | AWS EC2 `t3.micro`, Amazon Linux 2023, IP pública `54.221.66.193` |
-| DNS | `daniel-risk-lab.duckdns.org` → IP pública de la instancia |
-| Web y TLS | Apache 2.4 con `mod_ssl`, certificado Let's Encrypt (cadena ISRG, TLS 1.3) y redirección HTTP → HTTPS |
-| Frontend | Build estático de Vite en `/var/www/enterprise-risk-frontend` |
-| Backend | JAR de Spring Boot 4.1 como servicio systemd `enterprise-risk-api`, usuario sin privilegios `riskapi`, escuchando solo en `127.0.0.1:8080` |
-| Identidad | Tenant de Auth0, API `https://enterprise-risk-api` (RS256) con permiso `read:risk` |
+| Server | AWS EC2 `t3.micro`, Amazon Linux 2023, public IP `54.221.66.193` |
+| DNS | `daniel-risk-lab.duckdns.org` → the instance's public IP |
+| Web and TLS | Apache 2.4 with `mod_ssl`, Let's Encrypt certificate (ISRG chain, TLS 1.3), and HTTP → HTTPS redirect |
+| Frontend | Static Vite build in `/var/www/enterprise-risk-frontend` |
+| Backend | Spring Boot 4.1 JAR running as the systemd service `enterprise-risk-api`, under the unprivileged user `riskapi`, listening only on `127.0.0.1:8080` |
+| Identity | Auth0 tenant, API `https://enterprise-risk-api` (RS256) with the `read:risk` permission |
 
-## Estructura del repositorio
+## Repository layout
 
-- [`frontend/`](frontend/): React + Vite + `@auth0/auth0-react`; login, logout y llamada con Bearer token.
-- [`backend/`](backend/): API Spring Boot; valida firma RS256, emisor, audiencia, expiración y el permiso `read:risk`.
-- [`deploy/`](deploy/): virtual host de Apache (Ubuntu y Amazon Linux), unidad systemd y plantilla de variables del servidor.
-- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md): guía de configuración de Auth0 y despliegue.
-- [`docs/EVALUATION.md`](docs/EVALUATION.md): checklist del enunciado con la evidencia de cada punto.
-- [`docs/evidence/`](docs/evidence/): salidas de comandos y capturas.
+- [`frontend/`](frontend/): React + Vite + `@auth0/auth0-react`; login, logout, and an API call with a Bearer token.
+- [`backend/`](backend/): Spring Boot API; validates the RS256 signature, issuer, audience, expiration, and the `read:risk` permission.
+- [`deploy/`](deploy/): Apache virtual host (Ubuntu and Amazon Linux), systemd unit, and server environment template.
+- [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md): Auth0 configuration and deployment guide.
+- [`docs/EVALUATION.md`](docs/EVALUATION.md): the assignment checklist with the evidence for each item.
+- [`docs/evidence/`](docs/evidence/): command output and screenshots.
 
-## Evidencias
+## Evidence
 
-| Requisito | Evidencia |
+| Requirement | Evidence |
 | --- | --- |
-| Llamada autenticada exitosa (HTTPS) | [17-https-api-200.png](docs/evidence/screenshots/17-https-api-200.png) |
-| Certificado válido | [certificate.txt](docs/evidence/certificate.txt) (`Verify return code: 0 (ok)`, emitido por Let's Encrypt, vence 2027-01-18) |
-| 401 sin token | [unauthenticated.txt](docs/evidence/unauthenticated.txt) |
-| HTTP redirige a HTTPS | [http-redirect.txt](docs/evidence/http-redirect.txt) |
-| Puerto 8080 no accesible desde Internet | [port-8080.txt](docs/evidence/port-8080.txt) |
-| Renovación del certificado | [18-certbot-renew-dry-run.png](docs/evidence/screenshots/18-certbot-renew-dry-run.png) |
-| Logs centrales del servicio | [19-journalctl-service-logs.png](docs/evidence/screenshots/19-journalctl-service-logs.png) |
-| Pruebas automatizadas del backend | [local-tests.txt](docs/evidence/local-tests.txt) (13 pruebas, 0 fallos) |
+| Successful authenticated call (HTTPS) | [17-https-api-200.png](docs/evidence/screenshots/17-https-api-200.png) |
+| Valid certificate | [certificate.txt](docs/evidence/certificate.txt) (`Verify return code: 0 (ok)`, issued by Let's Encrypt, expires 2027-01-18) |
+| 401 without a token | [unauthenticated.txt](docs/evidence/unauthenticated.txt) |
+| HTTP redirects to HTTPS | [http-redirect.txt](docs/evidence/http-redirect.txt) |
+| Port 8080 unreachable from the internet | [port-8080.txt](docs/evidence/port-8080.txt) |
+| Certificate renewal | [18-certbot-renew-dry-run.png](docs/evidence/screenshots/18-certbot-renew-dry-run.png) |
+| Central service logs | [19-journalctl-service-logs.png](docs/evidence/screenshots/19-journalctl-service-logs.png) |
+| Automated backend tests | [local-tests.txt](docs/evidence/local-tests.txt) (13 tests, 0 failures) |
 
 <details>
-<summary>Configuración de Auth0</summary>
+<summary>Auth0 configuration</summary>
 
 | | |
 | --- | --- |
-| API con identificador `https://enterprise-risk-api` | ![](docs/evidence/screenshots/02-auth0-api-create.png) |
-| Firma RS256 | ![](docs/evidence/screenshots/03-auth0-api-rs256.png) |
-| Permiso `read:risk` | ![](docs/evidence/screenshots/05-auth0-permission-read-risk.png) |
-| SPA con User-Delegated Access a la API | ![](docs/evidence/screenshots/06-auth0-spa-user-delegated-access.png) |
-| Login universal de Auth0 | ![](docs/evidence/screenshots/07-auth0-universal-login.png) |
+| API with identifier `https://enterprise-risk-api` | ![](docs/evidence/screenshots/02-auth0-api-create.png) |
+| RS256 signing | ![](docs/evidence/screenshots/03-auth0-api-rs256.png) |
+| `read:risk` permission | ![](docs/evidence/screenshots/05-auth0-permission-read-risk.png) |
+| SPA with User-Delegated Access to the API | ![](docs/evidence/screenshots/06-auth0-spa-user-delegated-access.png) |
+| Auth0 Universal Login | ![](docs/evidence/screenshots/07-auth0-universal-login.png) |
 
 </details>
 
 <details>
-<summary>Infraestructura y flujo en HTTPS</summary>
+<summary>Infrastructure and HTTPS flow</summary>
 
 | | |
 | --- | --- |
-| Instancia EC2 | ![](docs/evidence/screenshots/12-ec2-instance.png) |
-| Duck DNS apuntando a la instancia | ![](docs/evidence/screenshots/13-duckdns-ec2-ip.png) |
-| Pantalla de inicio en HTTPS | ![](docs/evidence/screenshots/15-https-login.png) |
-| Sesión iniciada en HTTPS | ![](docs/evidence/screenshots/16-https-session.png) |
+| EC2 instance | ![](docs/evidence/screenshots/12-ec2-instance.png) |
+| Duck DNS pointing to the instance | ![](docs/evidence/screenshots/13-duckdns-ec2-ip.png) |
+| Home screen over HTTPS | ![](docs/evidence/screenshots/15-https-login.png) |
+| Signed-in session over HTTPS | ![](docs/evidence/screenshots/16-https-session.png) |
 
 </details>
 
 <details>
-<summary>Flujo local</summary>
+<summary>Local flow</summary>
 
 | | |
 | --- | --- |
-| Sesión iniciada en `localhost:5173` | ![](docs/evidence/screenshots/09-local-session.png) |
-| Respuesta 200 en local | ![](docs/evidence/screenshots/10-local-api-200.png) |
+| Signed-in session on `localhost:5173` | ![](docs/evidence/screenshots/09-local-session.png) |
+| 200 response locally | ![](docs/evidence/screenshots/10-local-api-200.png) |
 
 </details>
 
-## Ejecución local
+## Running locally
 
-Requisitos: Java 21, Node 20.19+ o 22.12+, npm y un tenant de Auth0 configurado según [DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Requirements: Java 21, Node 20.19+ or 22.12+, npm, and an Auth0 tenant configured as described in [DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
-1. Copia `frontend/.env.example` a `frontend/.env.local` y reemplaza dominio y Client ID.
-2. Crea `backend/.env` con `AUTH0_ISSUER_URI`, `AUTH0_JWK_SET_URI` y `AUTH0_AUDIENCE` (formato `CLAVE=valor`, ver [`deploy/backend.env.example`](deploy/backend.env.example)). Ninguno de los dos archivos se versiona.
+1. Copy `frontend/.env.example` to `frontend/.env.local` and fill in the domain and Client ID.
+2. Create `backend/.env` with `AUTH0_ISSUER_URI`, `AUTH0_JWK_SET_URI`, and `AUTH0_AUDIENCE` (`KEY=value` format, see [`deploy/backend.env.example`](deploy/backend.env.example)). Neither file is committed.
 3. Backend:
 
 ```bash
@@ -96,7 +96,7 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-4. Frontend, en otra terminal:
+4. Frontend, in another terminal:
 
 ```bash
 cd frontend
@@ -104,49 +104,54 @@ npm ci
 npm run dev
 ```
 
-Abre `http://localhost:5173`. Sin valores reales de Auth0 la página muestra "Configuración pendiente".
+Open `http://localhost:5173`. Without real Auth0 values, the page shows "Configuración pendiente" (configuration pending).
 
 ```bash
 curl -i http://127.0.0.1:8080/api/risk-status   # 401
 curl -i http://127.0.0.1:8080/actuator/health   # 200
 ```
 
-## Pruebas y compilación
+## Tests and build
 
 ```bash
 cd backend && ./mvnw clean verify
 cd ../frontend && npm ci && npm run build
 ```
 
-Las pruebas de integración levantan la API con un servidor JWKS local y JWT firmados con claves RSA temporales. Cubren: sin token (401), token malformado (401), token válido (200), sin permiso `read:risk` (403), emisor incorrecto (401), audiencia incorrecta (401), token vencido (401), firma inválida (401), health público (200), otras rutas denegadas (403) y CORS (origen permitido 200, no permitido 403).
+The integration tests start the API against a local JWKS server and JWTs signed with temporary RSA keys. They cover: no token (401), malformed token (401), valid token (200), missing `read:risk` permission (403), wrong issuer (401), wrong audience (401), expired token (401), invalid signature (401), public health endpoint (200), all other routes denied (403), and CORS (allowed origin 200, disallowed origin 403).
 
-## Autenticación vs. autorización
+## Authentication vs. authorization
 
-**Autenticación** responde a quién es el usuario: Auth0 verifica las credenciales y emite un access token firmado. **Autorización** responde a qué puede hacer: la API exige que ese token traiga el permiso `read:risk`. Por eso un token ausente o inválido recibe **401**, mientras que un token válido sin el permiso recibe **403**. El backend va un paso más allá del enunciado, que solo pedía `authenticated()`.
+**Authentication** answers who the user is: Auth0 verifies the credentials and issues a signed access token. **Authorization** answers what the user may do: the API requires that token to carry the `read:risk` permission. That is why a missing or invalid token gets **401**, while a valid token without the permission gets **403**. The backend goes one step beyond the assignment, which only required `authenticated()`.
 
-## Controles y riesgos
+## Controls and risks
 
-| Control | Riesgo reducido | Evidencia |
+| Control | Risk reduced | Evidence |
 | --- | --- | --- |
-| Autenticación con Auth0 | Suplantación y manejo inseguro de credenciales | Login universal de Auth0; la contraseña nunca pasa por la aplicación |
-| Validación de JWT en la API | Acceso no autorizado a la API | 401 sin token, con firma inválida o vencido |
-| Validación de emisor y audiencia | Reutilización de tokens de otro tenant o destinados a otra API | Pruebas negativas 401 |
-| Permiso `read:risk` | Usuario autenticado sin autorización para la operación | 403 sin permiso, 200 con permiso |
-| HTTPS con certificado válido | Exposición de credenciales o tokens en tránsito | `certificate.txt`, redirección 301 y renovación de prueba exitosa |
-| Proxy inverso Apache + escucha en loopback | Exposición directa del puerto de la aplicación | Solo 80 y 443 públicos; 8080 agota el tiempo desde Internet |
-| Logs centrales del servicio | Investigación tardía de incidentes | `journalctl -u enterprise-risk-api` con evento `risk_status_read`; access logs sin tokens |
+| Auth0 authentication | Impersonation and weak credential handling | Auth0 Universal Login; the password never passes through the application |
+| JWT validation at the API | Unauthorized API access | 401 without a token, with an invalid signature, or when expired |
+| Issuer and audience validation | Reuse of tokens from another tenant or meant for another API | Negative tests returning 401 |
+| `read:risk` permission | Authenticated user without authorization for the operation | 403 without the permission, 200 with it |
+| HTTPS with a valid certificate | Credential or token exposure in transit | `certificate.txt`, 301 redirect, and a successful renewal dry run |
+| Apache reverse proxy + loopback binding | Direct exposure of the application port | Only 80 and 443 are public; 8080 times out from the internet |
+| Central service logs | Delayed incident investigation | `journalctl -u enterprise-risk-api` with the `risk_status_read` event; access logs without tokens |
 
-## Notas de seguridad
+## Security notes
 
-- El frontend solo contiene dominio, Client ID y audiencia; no hay client secret.
-- El SDK de Auth0 mantiene los tokens en memoria. La aplicación no los muestra, no los registra y no los guarda manualmente.
-- CORS permite exactamente `http://localhost:5173` y el origen de producción, y solo el método `GET`.
-- CSRF está deshabilitado porque la API no usa sesión ni cookies; la autenticación es con Bearer token.
-- El servicio systemd corre con un usuario de sistema, `NoNewPrivileges`, `ProtectSystem=strict` y `ProtectHome`.
-- `.env*`, claves y certificados están en `.gitignore`.
+- The frontend only contains the domain, Client ID, and audience; there is no client secret.
+- The Auth0 SDK keeps tokens in memory. The application does not display, log, or manually store them.
+- CORS allows exactly `http://localhost:5173` and the production origin, and only the `GET` method.
+- CSRF is disabled because the API uses no session or cookies; authentication is done with a Bearer token.
+- The systemd service runs as a system user with `NoNewPrivileges`, `ProtectSystem=strict`, and `ProtectHome`.
+- `.env*` files, keys, and certificates are listed in `.gitignore`.
 
-## Referencias
+## References
 
 - [Auth0 React SDK](https://auth0.com/docs/libraries/auth0-react)
 - [Spring Security: JWT Resource Server](https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html)
 - [Certbot](https://eff-certbot.readthedocs.io/en/stable/using.html)
+
+
+## Author
+
+**Daniel Patiño Mejia**

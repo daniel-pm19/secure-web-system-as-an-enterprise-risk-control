@@ -1,4 +1,4 @@
-Comprobación externa (desde una máquina fuera de AWS), 2026-10-20 02:48 UTC
+External check (from a machine outside AWS), 2026-10-20 02:48 UTC
 
 $ dig +short daniel-risk-lab.duckdns.org
 54.221.66.193

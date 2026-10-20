@@ -1,41 +1,41 @@
-# Configuración y despliegue
+# Configuration and deployment
 
-Guía reproducible del despliegue. Los valores `YOUR_*`, `SERVER_IP` y `DEPLOY_USER` son placeholders que deben sustituirse. Los comandos siguen el enunciado (Ubuntu con systemd).
+Reproducible deployment guide. `YOUR_*`, `SERVER_IP`, and `DEPLOY_USER` are placeholders that must be replaced. The commands follow the assignment (Ubuntu with systemd).
 
-## Despliegue realizado
+## Actual deployment
 
 | | |
 | --- | --- |
 | URL | <https://daniel-risk-lab.duckdns.org> |
-| Servidor | AWS EC2 `t3.micro`, Amazon Linux 2023 (`us-east-1`), IP pública `54.221.66.193` |
-| Apache | 2.4 con `mod_ssl`; virtual host [`deploy/enterprise-risk-amazon-linux.conf`](../deploy/enterprise-risk-amazon-linux.conf) |
-| Backend | Unidad [`deploy/enterprise-risk-api.service`](../deploy/enterprise-risk-api.service), variables en `/etc/enterprise-risk-api.env` |
-| Certificado | Let's Encrypt emitido con Certbot, válido hasta 2027-01-18, renovación de prueba exitosa |
-| Red | Security group con 80 y 443 públicos; 8080 no expuesto |
+| Server | AWS EC2 `t3.micro`, Amazon Linux 2023 (`us-east-1`), public IP `54.221.66.193` |
+| Apache | 2.4 with `mod_ssl`; virtual host [`deploy/enterprise-risk-amazon-linux.conf`](../deploy/enterprise-risk-amazon-linux.conf) |
+| Backend | Unit [`deploy/enterprise-risk-api.service`](../deploy/enterprise-risk-api.service), variables in `/etc/enterprise-risk-api.env` |
+| Certificate | Let's Encrypt, issued with Certbot, valid until 2027-01-18, successful renewal dry run |
+| Network | Security group with 80 and 443 public; 8080 not exposed |
 
-Diferencias de Amazon Linux respecto a Ubuntu: los paquetes se instalan con `dnf`, el servicio se llama `httpd` en lugar de `apache2`, los módulos se cargan desde `/etc/httpd/conf.modules.d/` (no existe `a2enmod`/`a2ensite`), los virtual hosts van en `/etc/httpd/conf.d/` y los logs en `/var/log/httpd/`. El firewall se controla con el security group de EC2.
+Differences between Amazon Linux and Ubuntu: packages are installed with `dnf`, the service is called `httpd` instead of `apache2`, modules are loaded from `/etc/httpd/conf.modules.d/` (there is no `a2enmod`/`a2ensite`), virtual hosts go in `/etc/httpd/conf.d/`, and logs are in `/var/log/httpd/`. The firewall is managed through the EC2 security group.
 
-## 1. Acciones del estudiante: Auth0
+## 1. Auth0 setup
 
-1. Crea un tenant y una API **Enterprise Risk Lab API**, identificador `https://enterprise-risk-api`, firma RS256.
-2. Agrega el permiso `read:risk` (Read the protected risk status).
-3. Crea una SPA **Enterprise Risk Lab Frontend**. Configura Callback URLs, Logout URLs y Web Origins con `http://localhost:5173`; al desplegar agrega `https://YOUR-SUBDOMAIN.duckdns.org` en los tres campos, sin comodines.
-4. En los permisos de acceso de la SPA a la API, concede **User-Delegated Access** y `read:risk`. El acceso máquina a máquina no sustituye esta concesión. Si activas RBAC, asigna también el permiso al usuario mediante un rol.
-5. Crea un usuario de prueba en una conexión habilitada para la SPA. Ingresa su contraseña únicamente en Auth0.
-6. Copia el dominio y Client ID a `.env.local`. El audience debe coincidir en frontend, backend y Auth0. No se necesita un client secret.
-7. Configura en backend tanto el issuer (con `https://` y barra final) como la URL JWKS del mismo tenant.
-8. Inicia ambos componentes y prueba login → consultar API → HTTP 200 → logout. Guarda una captura sin tokens.
+1. Create a tenant and an API named **Enterprise Risk Lab API**, identifier `https://enterprise-risk-api`, RS256 signing.
+2. Add the `read:risk` permission (Read the protected risk status).
+3. Create a SPA named **Enterprise Risk Lab Frontend**. Set Callback URLs, Logout URLs, and Web Origins to `http://localhost:5173`; when deploying, add `https://YOUR-SUBDOMAIN.duckdns.org` to all three fields, without wildcards.
+4. In the SPA's API access settings, grant **User-Delegated Access** with `read:risk`. Machine-to-machine access does not replace this grant. If you enable RBAC, also assign the permission to the user through a role.
+5. Create a test user in a connection enabled for the SPA. Enter its password only in Auth0.
+6. Copy the domain and Client ID into `.env.local`. The audience must match in the frontend, the backend, and Auth0. No client secret is needed.
+7. In the backend, configure both the issuer (with `https://` and the trailing slash) and the JWKS URL of the same tenant.
+8. Start both components and test login → call API → HTTP 200 → logout. Take a screenshot that shows no tokens.
 
-## 2. Acciones del estudiante: servidor y DNS
+## 2. Server and DNS
 
-En este despliegue se usó una instancia EC2 de AWS; cualquier servidor Linux propio sirve.
+This deployment used an AWS EC2 instance; any Linux server you control works.
 
-- Crea un servidor Linux con Java 21 disponible. Cambia credenciales predeterminadas y prepara un usuario de despliegue no root con acceso SSH por clave.
-- Registra un subdominio en Duck DNS y apunta su registro a la IP pública del servidor. Si la IP cambia, configura el actualizador oficial con el token guardado de forma privada. Con IP reservada, verifica el registro cada vez que cambies el servidor.
-- Verifica `dig +short YOUR-SUBDOMAIN.duckdns.org` y compara con la IP del servidor. Comprueba también que no haya un registro AAAA que apunte a otro servidor.
-- Permite 80 y 443 públicamente en firewall y proveedor. No abras 8080. Para administrar, restringe SSH a tu IP o usa acceso privado del proveedor. Conserva la sesión y verifica el acceso administrativo antes de activar el firewall.
+- Create a Linux server with Java 21. Change default credentials and set up a non-root deployment user with key-based SSH access.
+- Register a Duck DNS subdomain and point it to the server's public IP. If the IP changes, configure the official updater with the token stored privately. With a reserved IP, check the record every time you change the server.
+- Run `dig +short YOUR-SUBDOMAIN.duckdns.org` and compare it with the server IP. Also check that no AAAA record points to another server.
+- Allow 80 and 443 publicly in the firewall and at the provider. Do not open 8080. For administration, restrict SSH to your IP or use the provider's private access. Keep your session open and verify administrative access before enabling the firewall.
 
-En Ubuntu:
+On Ubuntu:
 
 ```bash
 sudo apt update
@@ -49,11 +49,11 @@ sudo ufw enable
 sudo ufw status verbose
 ```
 
-No ejecutes el comando de SSH con el placeholder. Si usas gestión privada, adapta esa regla a dicho mecanismo.
+Do not run the SSH rule with the placeholder. If you use private management access, adapt that rule accordingly.
 
-## 3. Compilar y transferir desde desarrollo
+## 3. Build and transfer from the development machine
 
-Copia `frontend/.env.production.example` a `frontend/.env.production.local` y reemplaza los valores. Vite integra estas variables al compilar: cambiar un archivo después de compilar no cambia el sitio. Si existe `.env.local`, sus valores tienen precedencia menor que `.env.production.local`.
+Copy `frontend/.env.production.example` to `frontend/.env.production.local` and replace the values. Vite embeds these variables at build time: changing a file after the build does not change the site. If `.env.local` exists, its values have lower precedence than `.env.production.local`.
 
 ```bash
 cd backend
@@ -68,7 +68,7 @@ scp -r frontend/dist/. DEPLOY_USER@SERVER_IP:~/risk-release/frontend/
 scp deploy/enterprise-risk-api.service deploy/enterprise-risk.conf deploy/backend.env.example DEPLOY_USER@SERVER_IP:~/risk-release/deploy/
 ```
 
-## 4. Instalar backend en el servidor
+## 4. Install the backend on the server
 
 ```bash
 sudo useradd --system --no-create-home --shell /usr/sbin/nologin riskapi
@@ -84,9 +84,9 @@ sudo ss -ltnp 'sport = :8080'
 sudo journalctl -u enterprise-risk-api -n 50 --no-pager
 ```
 
-La escucha debe ser `127.0.0.1:8080`. Si el usuario ya existe, no repitas `useradd`. Reemplaza todos los placeholders del archivo de entorno antes de iniciar. Tras cambios: `sudo systemctl restart enterprise-risk-api`.
+The service must listen on `127.0.0.1:8080`. If the user already exists, skip `useradd`. Replace every placeholder in the environment file before starting. After changes: `sudo systemctl restart enterprise-risk-api`.
 
-## 5. Apache y certificado
+## 5. Apache and certificate
 
 ```bash
 sudo install -d -m 755 /var/www/enterprise-risk-frontend
@@ -102,13 +102,13 @@ sudo certbot renew --dry-run
 systemctl list-timers --all | grep certbot
 ```
 
-Sustituye ServerName antes de habilitar. Certbot solicitará correo y aceptación de términos: esas decisiones corresponden al estudiante. Certbot crea el virtual host TLS; comprueba que conserve el proxy `/api/`, las reglas SPA y las cabeceras. La plantilla determina X-Forwarded-Proto según la conexión TLS.
+Replace `ServerName` before enabling the site. Certbot asks for an email address and acceptance of its terms. Certbot creates the TLS virtual host; check that it keeps the `/api/` proxy, the SPA rules, and the headers. The template sets `X-Forwarded-Proto` according to the TLS connection.
 
-Actualiza los tres orígenes de Auth0 al hostname HTTPS definitivo. Verifica la URL en el navegador y consulta la API autenticado. No expongas `/actuator/health` mediante Apache; se consulta localmente.
+Update the three Auth0 origins to the final HTTPS hostname. Check the URL in the browser and call the API while signed in. Do not expose `/actuator/health` through Apache; it is queried locally.
 
-## 6. Evidencias reales antes de entregar
+## 6. Collecting evidence
 
-Desde otra máquina (no desde el servidor):
+From another machine (not from the server):
 
 ```bash
 curl -i https://YOUR-SUBDOMAIN.duckdns.org/api/risk-status
@@ -117,16 +117,16 @@ curl --connect-timeout 5 http://SERVER_IP:8080/api/risk-status
 openssl s_client -connect YOUR-SUBDOMAIN.duckdns.org:443 -servername YOUR-SUBDOMAIN.duckdns.org -verify_hostname YOUR-SUBDOMAIN.duckdns.org -verify_return_error </dev/null
 ```
 
-Esperado: 401, redirección a HTTPS, conexión rechazada o agotada en 8080 y `Verify return code: 0 (ok)` con nombre correcto. No uses `curl -k`.
+Expected: 401, a redirect to HTTPS, a refused or timed-out connection on 8080, and `Verify return code: 0 (ok)` with the correct hostname. Do not use `curl -k`.
 
-Evidencias guardadas en `docs/evidence/`:
+Evidence stored in `docs/evidence/`:
 
-- `screenshots/17-https-api-200.png`: navegador en la URL HTTPS, sesión iniciada y respuesta HTTP 200 con `status: protected`.
-- `certificate.txt`: certificado, hostname, vigencia y cadena válida.
-- `unauthenticated.txt`: respuesta 401 pública.
-- `http-redirect.txt`: redirección 301 de HTTP a HTTPS.
-- `port-8080.txt`: comprobación externa del puerto 8080.
-- `screenshots/18-certbot-renew-dry-run.png`: resultado de `sudo certbot renew --dry-run`.
-- `screenshots/19-journalctl-service-logs.png`: arranque del servicio y evento `risk_status_read` en journalctl.
+- `screenshots/17-https-api-200.png`: browser on the HTTPS URL, signed in, with an HTTP 200 response showing `status: protected`.
+- `certificate.txt`: certificate, hostname, validity period, and valid chain.
+- `unauthenticated.txt`: public 401 response.
+- `http-redirect.txt`: 301 redirect from HTTP to HTTPS.
+- `port-8080.txt`: external check of port 8080.
+- `screenshots/18-certbot-renew-dry-run.png`: output of `sudo certbot renew --dry-run`.
+- `screenshots/19-journalctl-service-logs.png`: service startup and the `risk_status_read` event in journalctl.
 
-Revisa las evidencias para no incluir secretos. Las evidencias de este despliegue están en [`docs/evidence/`](evidence/) y enlazadas desde el [README](../README.md); la renovación y los logs del servicio están como capturas en [`screenshots/`](evidence/screenshots/).
+Review the evidence so it contains no secrets. All evidence for this deployment is in [`docs/evidence/`](evidence/) and linked from the [README](../README.md).
