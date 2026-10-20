@@ -1,0 +1,75 @@
+Connecting to 54.221.66.193
+depth=3 C=US, O=Internet Security Research Group, CN=ISRG Root X2
+verify return:1
+depth=2 C=US, O=ISRG, CN=Root YE
+verify return:1
+depth=1 C=US, O=Let's Encrypt, CN=YE2
+verify return:1
+depth=0 CN=daniel-risk-lab.duckdns.org
+verify return:1
+CONNECTED(00000003)
+---
+Certificate chain
+ 0 s:CN=daniel-risk-lab.duckdns.org
+   i:C=US, O=Let's Encrypt, CN=YE2
+   a:PKEY: EC, (prime256v1); sigalg: ecdsa-with-SHA384
+   v:NotBefore: Oct 20 01:34:36 2026 GMT; NotAfter: Jan 18 01:34:35 2027 GMT
+ 1 s:C=US, O=Let's Encrypt, CN=YE2
+   i:C=US, O=ISRG, CN=Root YE
+   a:PKEY: EC, (secp384r1); sigalg: ecdsa-with-SHA384
+   v:NotBefore: Sep  3 00:00:00 2025 GMT; NotAfter: Sep  2 23:59:59 2028 GMT
+ 2 s:C=US, O=ISRG, CN=Root YE
+   i:C=US, O=Internet Security Research Group, CN=ISRG Root X2
+   a:PKEY: EC, (secp384r1); sigalg: ecdsa-with-SHA384
+   v:NotBefore: May 13 00:00:00 2026 GMT; NotAfter: Sep  2 23:59:59 2032 GMT
+ 3 s:C=US, O=Internet Security Research Group, CN=ISRG Root X2
+   i:C=US, O=Internet Security Research Group, CN=ISRG Root X1
+   a:PKEY: EC, (secp384r1); sigalg: sha256WithRSAEncryption
+   v:NotBefore: May 13 00:00:00 2026 GMT; NotAfter: Sep  2 23:59:59 2032 GMT
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIDpTCCAyqgAwIBAgISBsGScxzlee9RxMwd+FaX0n4GMAoGCCqGSM49BAMDMDMx
+CzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQDEwNZ
+RTIwHhcNMjYxMDIwMDEzNDM2WhcNMjcwMTE4MDEzNDM1WjAmMSQwIgYDVQQDExtk
+YW5pZWwtcmlzay1sYWIuZHVja2Rucy5vcmcwWTATBgcqhkjOPQIBBggqhkjOPQMB
+BwNCAASTcpZburrMerQ2L4oum4/wKe8YnBWLsOenFhGiz76mYB6uunssw1D6MYiO
+UnRvFHrZ8mO+6elzae7FeBE9Cncpo4ICKTCCAiUwDgYDVR0PAQH/BAQDAgeAMBMG
+A1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwHQYDVR0OBBYEFB8pn3vT
+kjED3HROLT0W7bF8xRYZMB8GA1UdIwQYMBaAFLlZ8o7PIvCG0zdI/3YUGLqC2FWH
+MDMGCCsGAQUFBwEBBCcwJTAjBggrBgEFBQcwAoYXaHR0cDovL3llMi5pLmxlbmNy
+Lm9yZy8wJgYDVR0RBB8wHYIbZGFuaWVsLXJpc2stbGFiLmR1Y2tkbnMub3JnMBMG
+A1UdIAQMMAowCAYGZ4EMAQIBMC0GA1UdHwQmMCQwIqAgoB6GHGh0dHA6Ly95ZTIu
+Yy5sZW5jci5vcmcvNy5jcmwwggENBgorBgEEAdZ5AgQCBIH+BIH7APkAdwBGojln
+xg22RofGbz35mZR2k6amESCEV9VV5+PQodm2RgAAAaFXJ8bYAAAEAwBIMEYCIQC5
+d30kWfaB1gVJjUvOS36MWbmJx+QzPvwo1IUK+InvjwIhAPpD3jIwIo64ZrFrqOCg
+QsljPAlRahqi4h0FK9blFODdAH4AROgi/CurDpLu0On61pZkYCd20Bdg4IkFCckj
+obA/w38AAAGhVye65wAIAAAFAA0EMrMEAwBHMEUCIQDui1KWoW7FQDGc50n4npWW
+FMynGznLA+q8X5RY2qOF5wIgXrUwxWgDsY0ZOFf2I2dPOV3clJilgB86BvxCVR8Y
+yxkwCgYIKoZIzj0EAwMDaQAwZgIxAP8RYEEbSKIPf5saxBz5puEfzG+PKjQnyVlz
+Qqx5Vclt0XOEKkS4DUSd1tFeAw0XuwIxAIHwfMFSdHblYh2sZmx8tu9YJdmU4wUq
+CUuHnYi+xqONt+yeaj9NL4qEh52HiEgv2w==
+-----END CERTIFICATE-----
+subject=CN=daniel-risk-lab.duckdns.org
+issuer=C=US, O=Let's Encrypt, CN=YE2
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: ecdsa_secp256r1_sha256
+Peer Temp Key: X25519, 253 bits
+---
+SSL handshake has read 3805 bytes and written 1649 bytes
+Verification: OK
+Verified peername: daniel-risk-lab.duckdns.org
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
+Protocol: TLSv1.3
+Server public key is 256 bit
+This TLS version forbids renegotiation.
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---
+DONE

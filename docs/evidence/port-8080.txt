@@ -1,0 +1,11 @@
+Comprobación externa (desde una máquina fuera de AWS), 2026-10-20 02:48 UTC
+
+$ dig +short daniel-risk-lab.duckdns.org
+54.221.66.193
+
+$ curl --connect-timeout 6 http://daniel-risk-lab.duckdns.org:8080/api/risk-status
+curl: (28) Connection timed out after 6001 milliseconds
+(exit code 28)
+
+$ curl --connect-timeout 6 -o /dev/null -w '%{http_code}' https://daniel-risk-lab.duckdns.org/api/risk-status
+401

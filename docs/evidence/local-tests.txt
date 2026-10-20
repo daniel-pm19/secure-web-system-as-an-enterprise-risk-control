@@ -1,0 +1,7 @@
+Evidencia local: pruebas con claves RSA temporales, no login real de Auth0.
+Java 21.0.12.1; Spring Boot 4.1.1
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.210 s -- in co.edu.escuelaing.secure_web_system_as_an_enterprise_risk_control.SecurityIntegrationTests
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.736 s -- in co.edu.escuelaing.secure_web_system_as_an_enterprise_risk_control.SecureWebSystemAsAnEnterpriseRiskControlApplicationTests
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] Total time:  13.425 s
