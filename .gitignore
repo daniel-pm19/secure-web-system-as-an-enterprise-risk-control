@@ -1,0 +1,11 @@
+**/target/
+**/node_modules/
+**/dist/
+**/logs/
+**/.env*
+!**/.env.example
+!**/.env.production.example
+*.pem
+*.key
+.idea/
+.env
